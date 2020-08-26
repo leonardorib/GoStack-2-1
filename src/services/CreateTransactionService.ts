@@ -1,6 +1,8 @@
 import TransactionsRepository from '../repositories/TransactionsRepository';
 import Transaction from '../models/Transaction';
 
+type ICreateTransactionService = Omit<Transaction, 'id'>;
+
 class CreateTransactionService {
   private transactionsRepository: TransactionsRepository;
 
@@ -8,8 +10,24 @@ class CreateTransactionService {
     this.transactionsRepository = transactionsRepository;
   }
 
-  public execute(): Transaction {
-    // TODO
+  public execute({
+    title,
+    value,
+    type,
+  }: ICreateTransactionService): ICreateTransactionService {
+    const { total } = this.transactionsRepository.getBalance();
+
+    if (type === 'outcome' && value > total) {
+      throw new Error('Withdrawal exceded total amount available');
+    }
+
+    const transaction = this.transactionsRepository.create({
+      title,
+      type,
+      value,
+    });
+
+    return transaction;
   }
 }
 
